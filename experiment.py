@@ -15,7 +15,7 @@ import csv
 from scipy.signal import savgol_filter
 from agents import *
 
-def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions = 5, actor_lr = 1e-4, critic_lr = 1e-3, budget =  200000):  
+def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions = 5, actor_lr = 1e-4, critic_lr = 1e-4, budget =  1000000):  
     """
     Executes the optimization process for the correspondent type of ModelFreeLearner, and generates a csv file with the averaged resuls.
     """  
@@ -42,7 +42,7 @@ def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions
         curr_env = gym.make("CartPole-v1")
         
         #Initialize learner depending on the experiment
-        if file_name == "A2C_Norm":
+        if file_name == "PPO":
             learner = learner_type(curr_env,2,2,0.99, actor_lr,critic_lr, True)
         else:
             learner = learner_type(curr_env,2,2,0.99, actor_lr,critic_lr)
@@ -52,7 +52,7 @@ def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions
         if len(evaluation) > (budget/250):
             evaluation = evaluation[:-int(len(evaluation) - (budget/250))]
         curr_eval_returns, curr_eval_timesteps  = [*zip(*evaluation)]
-        
+        print(len(np.array(curr_eval_returns)))
         results.append(np.array(curr_eval_returns))
     
     results = np.array(results)
@@ -121,10 +121,7 @@ def plot_full_runs(solved_threshold=500, num_repetitions = 5):
 #select a seed to make results replicable
 torch.manual_seed(2001)
 
-get_full_run_results('REINFORCE', REINFORCE, budget = 1e6)
-get_full_run_results('AC', AC, budget = 1e6)
-get_full_run_results('A2C', A2C, budget = 1e6, critic_lr = 1e-4)
-get_full_run_results('A2C_Norm', A2C, budget = 1e6, critic_lr = 1e-4)
+get_full_run_results('PPO', PPO, budget = 1e6)
 plot_full_runs()
 
 
