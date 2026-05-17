@@ -15,7 +15,8 @@ import csv
 from scipy.signal import savgol_filter
 from agents import *
 
-def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions = 5, actor_lr = 1e-4, critic_lr = 1e-4, budget =  1000000):  
+def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions = 5, actor_lr = 1e-4, critic_lr = 1e-4, budget =  1000000, 
+                         epsilon=0.2, entropy_coefficient = 0.01, epochs = 5,minibatch_len=100, rollout_len=2000, target_kl=0.02):  
     """
     Executes the optimization process for the correspondent type of ModelFreeLearner, and generates a csv file with the averaged resuls.
     """  
@@ -43,7 +44,8 @@ def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions
         
         #Initialize learner depending on the experiment
         if file_name == "PPO":
-            learner = learner_type(curr_env,2,2,0.99, actor_lr,critic_lr, True)
+            learner = learner_type(curr_env,2,2,0.99, actor_lr,critic_lr, True, epsilon=epsilon, 
+                                   entropy_coefficient = entropy_coefficient, epochs = epochs, minibatch_len = minibatch_len, target_kl = target_kl)
         else:
             learner = learner_type(curr_env,2,2,0.99, actor_lr,critic_lr)
 
@@ -94,7 +96,7 @@ def plot_full_runs(solved_threshold=500, num_repetitions = 5):
         index +=1
     #define smoothing window
     smoothing_window = 81
-    colors = ["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd"]
+    colors = ["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd", '#56B4E9', '#009E73', '#E69F00', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']
     fig, ax = plt.subplots(figsize=(8, 6))
     #plot for every item collected, adding smoothing with a savgol_filter
     for item, color in zip(items, colors):
@@ -120,8 +122,32 @@ def plot_full_runs(solved_threshold=500, num_repetitions = 5):
 
 #select a seed to make results replicable
 torch.manual_seed(2001)
+#Hyperparameter testing
+#epsilon_list=[0.05,0.1,0.2]
+#entropy_coefficient_list = [0.1,0.01,0.001]
+#epochs_list = 5
+#minibatch_len_list=[50,100]
+#target_kl_list=[0.01,0.02,0.05]
+#for epsilon in epsilon_list:
+#    for entropy_coefficient in entropy_coefficient_list:
+#        for minibatch_len in minibatch_len_list:
+#            for target_kl in target_kl_list:
+#                get_full_run_results(f'PPO_epsilon{epsilon}_ec{entropy_coefficient}_mblen{minibatch_len}_kl{target_kl}', PPO,num_repetitions=2, budget = 200000
+#                                     ,epsilon=epsilon,entropy_coefficient=entropy_coefficient,minibatch_len=minibatch_len,target_kl=target_kl)
 
-get_full_run_results('PPO', PPO, budget = 1e6)
+#Full Runs
+get_full_run_results(f'PPO', PPO,num_repetitions=5, budget = 1000000
+                    ,epsilon=0.05,entropy_coefficient=0.01,minibatch_len=50,target_kl=0.01)
+#get_full_run_results(f'ep_005_ec01_mblen100_kl005', PPO,num_repetitions=5, budget = 1000000
+#                    ,epsilon=0.05,entropy_coefficient=0.1,minibatch_len=100,target_kl=0.05)
+#get_full_run_results(f'ep_01_ec01_mblen100_kl001', PPO,num_repetitions=5, budget = 1000000
+#                    ,epsilon=0.1,entropy_coefficient=0.1,minibatch_len=100,target_kl=0.01)
+#get_full_run_results(f'ep_01_ec0001_mblen50_kl001', PPO,num_repetitions=5, budget = 1000000
+#                    ,epsilon=0.1,entropy_coefficient=0.001,minibatch_len=50,target_kl=0.01)
+#get_full_run_results(f'ep_02_ec001_mblen50_kl002', PPO,num_repetitions=5, budget = 1000000
+#                    ,epsilon=0.2,entropy_coefficient=0.01,minibatch_len=50,target_kl=0.02)
+#get_full_run_results(f'ep_02_ec0001_mblen50_kl005', PPO,num_repetitions=5, budget = 1000000
+#                    ,epsilon=0.2,entropy_coefficient=0.001,minibatch_len=50,target_kl=0.05)
 plot_full_runs()
 
 
