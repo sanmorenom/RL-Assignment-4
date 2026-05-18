@@ -21,6 +21,7 @@ def get_full_run_results(file_name,learner_type:ModelFreeLearner,num_repetitions
     Executes the optimization process for the correspondent type of ModelFreeLearner, and generates a csv file with the averaged resuls.
     """  
     # specify the directory name
+    #directory_name = 'Hyper_parameter_testing'
     directory_name = 'Full_Run_Results'
 
     # create the directory if it dosnt exist
@@ -71,6 +72,7 @@ def plot_full_runs(solved_threshold=500, num_repetitions = 5):
     Goes through the Full_Run_Results folder and plots the results of each csv file in it
     """
     items = []
+    #folder = f'Hyper_parameter_testing/'
     folder = f'Full_Run_Results/'
     files = os.listdir(folder)
     index = 0
@@ -96,7 +98,7 @@ def plot_full_runs(solved_threshold=500, num_repetitions = 5):
         index +=1
     #define smoothing window
     smoothing_window = 81
-    colors = ["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd", '#56B4E9', '#009E73', '#E69F00', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']
+    colors = ['#56B4E9','#9467bd','#ff7f0e', '#009E73', '#E69F00', '#F0E442', '#0072B2', '#D55E00', '#CC79A7','#1f77b4','#2ca02c','#d62728']
     fig, ax = plt.subplots(figsize=(8, 6))
     #plot for every item collected, adding smoothing with a savgol_filter
     for item, color in zip(items, colors):
