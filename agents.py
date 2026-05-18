@@ -301,20 +301,25 @@ class PPO(ModelFreeLearner):
     def __update_actor__(self,old_log_probs ,log_probs ,advantage, returns, entropy):
         
         # normalizing advantages for reducing variance further
-        # as seen in the following example: https://github.com/pytorch/examples/blob/main/reinforcement_learning/actor_critic.py
+        # calculate logratios between the old and new log probabilities
         log_ratios = log_probs - old_log_probs
+        # use exponential to get ratios
         ratios = torch.exp(log_ratios)
+        #Get the approximate kl divergence result for early stopping
         approx_kl = ((ratios - 1.0) - log_ratios).mean().detach().item()
         surrogate_loss_1 = ratios * advantage
         surrogate_loss_2 = torch.clamp(ratios, min=1.0-self.epsilon, max=1.0+self.epsilon) * advantage
 
         # PPO clipped loss
         surr_loss = torch.min(surrogate_loss_1, surrogate_loss_2)
+        # get entropy bonus
         entropy_bonus = entropy.mean()*self.entropy_coefficient
+        # calculate actor loss
         loss = torch.sum(-(surr_loss.mean() + entropy_bonus))
         # do gradient decent step
         self.actor_optim.zero_grad()
         loss.backward()
+        # do gradient clipping to avoid exploding gradients
         torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 0.5)
         self.actor_optim.step()
         return approx_kl
@@ -381,7 +386,7 @@ class PPO(ModelFreeLearner):
                     if done:
                         break
 
-            # calculate returns based on rewards 
+            # save the last qvalue to be used for the return calculation
             with torch.no_grad():
                 if len(self.dones) > 0 and not self.dones[-1]:
                     final_state= torch.tensor(state, dtype=torch.float32)
@@ -389,17 +394,24 @@ class PPO(ModelFreeLearner):
                     last_value = last_value_tensor.item()
                 else:
                     last_value = 0.0
+            # calculate returns based on rewards 
             returns = self.__get_returns_roll__(last_value)
+            # calculate advantage using returns and the critic qvalues
             advantage = self.__get_advantage__(returns)
+            # turn the results from the rollouts into tensors
             roll_states = torch.tensor(np.array(self.states), dtype=torch.float32)
             roll_actions = torch.tensor(self.actions, dtype=torch.long)
             old_log_probs = torch.tensor(self.log_probs, dtype=torch.float32).detach()
             batch_size = roll_states.shape[0]
             last_approx_kl = 0.0
             stop_update = False
+            # minibatching and rollout implementation inspired by  https://github.com/ericyangyu/PPO-for-Beginners/blob/master/part4/ppo_for_beginners/ppo_optimized.py
+            # update over multiple epochs
             for _ in range(self.epochs):
+                #get indexes for minibatching
                 idx = torch.randperm(batch_size)
                 for i in range(0, batch_size, self.minibatch_len):
+                    # get the state, action, log probability, return and advantage values for the current minibatch
                     end = i + self.minibatch_len
                     batch_idx = idx[i:end]
                     batch_states = roll_states[batch_idx]
@@ -407,11 +419,13 @@ class PPO(ModelFreeLearner):
                     batch_old_log_probs = old_log_probs[batch_idx]
                     batch_returns = returns[batch_idx]
                     batch_advantage = advantage[batch_idx]
-                    # update both actor and critic
+                    # get the log probabilities and entropy values from the current minibatch states and actions, using the current actor
                     curr_log_probs,entropy = self.__evaluate_actor__(batch_states,batch_actions)
+                    # update both actor and critic, retrieving the approximate KL divergence from the actor update
                     approx_kl = self.__update_actor__(batch_old_log_probs ,curr_log_probs ,batch_advantage, batch_returns, entropy)
                     self.__update_critic__(batch_returns,batch_states)
                     last_approx_kl = approx_kl
+                    # check if the kl value is over the  target, and stop learning from this rollout if it does
                     if self.target_kl is not None and approx_kl > self.target_kl:
                         stop_update = True
                         break
@@ -447,7 +461,7 @@ class PPO(ModelFreeLearner):
         self.critic_optim.step()
     
     def __update_critic__(self,returns,states):
-        # loss between target value (calculated from returns) and predicted q_vals
+        # loss between target value (calculated from returns) and predicted q_vals, including the states
         values = self.critic(states).squeeze()
         loss = F.mse_loss(values, returns.detach())
         # do gradient decent step

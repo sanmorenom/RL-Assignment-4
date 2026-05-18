@@ -125,6 +125,8 @@ def plot_full_runs(solved_threshold=500, num_repetitions = 5):
 #select a seed to make results replicable
 torch.manual_seed(2001)
 #Hyperparameter testing
+# To get the final results of the hyperparameter tuning, after the runs, files where divided into different folders and plotted in groups
+# for comparison. This was done by hand, so I recommend seeing the results at the github https://github.com/sanmorenom/RL-Assignment-4.git
 #epsilon_list=[0.05,0.1,0.2]
 #entropy_coefficient_list = [0.1,0.01,0.001]
 #epochs_list = 5
@@ -138,6 +140,7 @@ torch.manual_seed(2001)
 #                                     ,epsilon=epsilon,entropy_coefficient=entropy_coefficient,minibatch_len=minibatch_len,target_kl=target_kl)
 
 #Full Runs
+#This is the final run used for the report results, the others where part of the hyperparameter testing process it was kept as comments
 get_full_run_results(f'PPO', PPO,num_repetitions=5, budget = 1000000
                     ,epsilon=0.05,entropy_coefficient=0.01,minibatch_len=50,target_kl=0.01)
 #get_full_run_results(f'ep_005_ec01_mblen100_kl005', PPO,num_repetitions=5, budget = 1000000
