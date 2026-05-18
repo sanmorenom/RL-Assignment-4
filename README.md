@@ -1,7 +1,7 @@
 # RL-Assignment-4
 This repository contains the source code for the 4. Assignment for Reinforcement Learning by Santiago Moreno Mercado. The source code to train the PPO agent is contained in the agents.py file, specifically in the PPO class.
 ## Experiments
-The experiment script is contained in the experiment.py file, and all the results are stored as `.csv` files in the Full_Run_Results directory. To get the experiment results plot, simply execute the aforementioned script. Since the results files are not being submitted, they can be downloaded [here](https://github.com/sanmorenom/RL-Assignment-3/tree/58d434150ea900a318c84997ff6387b2a5e2c821/Full_Run_Results)
+The experiment script is contained in the experiment.py file, and all the results are stored as `.csv` files in the Full_Run_Results directory. To get the experiment results plot, simply execute the aforementioned script. Since the results files are not being submitted, they can be downloaded [here]([https://github.com/sanmorenom/RL-Assignment-3/tree/58d434150ea900a318c84997ff6387b2a5e2c821/Full_Run_Results](https://github.com/sanmorenom/RL-Assignment-4/tree/main/Full_Run_Results)) Hyperparameter testing results can be downloaded [here]([https://github.com/sanmorenom/RL-Assignment-3/tree/58d434150ea900a318c84997ff6387b2a5e2c821/Full_Run_Results](https://github.com/sanmorenom/RL-Assignment-4/tree/main/Full_Run_Results))
 ## Training a PPO Agent
 To train a PPO agent, please do the following:
 1. Import required libraries
