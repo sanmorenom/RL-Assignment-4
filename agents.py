@@ -491,5 +491,19 @@ if __name__ == "__main__":
     # quick test run; The episode returns are maximised at roughly 98 since we are using a discount factor 
     print('test')
     env = gym.make("CartPole-v1")
-    ppo = PPO(env,2,2,0.99, 0.001,0.001, True)
-    ppo.optimize(100000)
+    PPO_agemt = PPO(
+        env=env,
+        n_actor_layers = 2,
+        n_critic_layers = 2,
+        gamma = 0.99,
+        actor_lr = 1e-4,
+        critic_lr = 1e-4,
+        adv_norm = True,
+        epsilon=0.05,
+        entropy_coefficient = 0.01,
+        epochs = 4,
+        minibatch_len=50,
+        rollout_len=2000,
+        target_kl=0.01
+        )
+    PPO_agemt.optimize(100000)
